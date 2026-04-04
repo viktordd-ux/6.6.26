@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 660" role="img" aria-labelledby="title desc">
+  <title id="title">@8<5@ 65=A:>3> >1@070</title>
+  <desc id="desc">1AB@0:B=0O 8;;NAB@0F8O 65=A:>3> >1@070 2 ?@8@>4=>9 ?0;8B@5.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#f7f2e8"/>
+      <stop offset="100%" stop-color="#d8c8ad"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="660" fill="url(#bg)"/>
+  <ellipse cx="250" cy="560" rx="220" ry="95" fill="#c8b89e" opacity="0.45"/>
+  <ellipse cx="710" cy="560" rx="220" ry="95" fill="#b6c09f" opacity="0.35"/>
+  <circle cx="480" cy="205" r="75" fill="#eadfcd"/>
+  <path d="M370 360c0-62 50-112 112-112s112 50 112 112v185H370V360z" fill="#8c9a73"/>
+  <path d="M320 560h320v48H320z" fill="#6b7d57" opacity="0.88"/>
+  <path d="M420 305h120v240H420z" fill="#f7f2e8" opacity="0.28"/>
+</svg>

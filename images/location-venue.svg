@@ -1,0 +1,24 @@
+<svg width="1200" height="750" viewBox="0 0 1200 750" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F7F2E8"/>
+      <stop offset="1" stop-color="#D8C8AD"/>
+    </linearGradient>
+    <linearGradient id="building" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8A9A73"/>
+      <stop offset="1" stop-color="#6B7D57"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="750" fill="url(#bg)"/>
+  <rect y="560" width="1200" height="190" fill="#CBB899"/>
+  <rect x="265" y="220" width="670" height="360" rx="24" fill="url(#building)"/>
+  <rect x="330" y="280" width="130" height="160" rx="16" fill="#F7F2E8" opacity="0.88"/>
+  <rect x="535" y="280" width="130" height="160" rx="16" fill="#F7F2E8" opacity="0.88"/>
+  <rect x="740" y="280" width="130" height="160" rx="16" fill="#F7F2E8" opacity="0.88"/>
+  <path d="M250 240L600 120L950 240H250Z" fill="#3F4F35"/>
+  <rect x="560" y="430" width="80" height="150" rx="12" fill="#3F4F35"/>
+  <circle cx="1020" cy="120" r="46" fill="#F7F2E8" opacity="0.7"/>
+  <text x="600" y="650" text-anchor="middle" fill="#3F4F35" font-family="Montserrat, Arial, sans-serif" font-size="42" font-weight="600">
+    Maison La Prairie
+  </text>
+</svg>

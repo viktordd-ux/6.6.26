@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-labelledby="title desc">
+  <title id="title"> ><0= 8 0;5@8O</title>
+  <desc id="desc">5:>@0B82=K9 ?;59AE>;45@ 4;O F5=B@0;L=>3> D>B> ?0@K</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f7f2e8" />
+      <stop offset="100%" stop-color="#d8c8ad" />
+    </linearGradient>
+  </defs>
+  <rect width="800" height="1000" fill="url(#bg)" />
+  <circle cx="400" cy="360" r="170" fill="#6b7d57" opacity="0.2" />
+  <rect x="170" y="570" width="460" height="220" rx="110" fill="#3f4f35" opacity="0.16" />
+  <text x="400" y="480" text-anchor="middle" font-family="'Cormorant Garamond', serif" font-size="78" fill="#3f4f35"> &amp;</text>
+</svg>

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 660" role="img" aria-labelledby="title desc">
+  <title id="title">@8<5@ <C6A:>3> >1@070</title>
+  <desc id="desc">1AB@0:B=0O 8;;NAB@0F8O <C6A:>3> >1@070 2 15652>->;82:>2>9 30<<5.</desc>
+  <defs>
+    <linearGradient id="bgm" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#efe5d5"/>
+      <stop offset="100%" stop-color="#f7f2e8"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="660" fill="url(#bgm)"/>
+  <ellipse cx="300" cy="560" rx="210" ry="90" fill="#d8c8ad" opacity="0.52"/>
+  <ellipse cx="660" cy="560" rx="250" ry="95" fill="#a8b48a" opacity="0.34"/>
+  <circle cx="480" cy="190" r="72" fill="#e3d4be"/>
+  <rect x="388" y="262" width="184" height="300" rx="52" fill="#d8c8ad"/>
+  <rect x="430" y="278" width="100" height="266" rx="22" fill="#f7f2e8"/>
+  <path d="M335 352c0-78 65-143 145-143s145 65 145 143v210H335V352z" fill="#6b7d57" opacity="0.92"/>
+  <path d="M392 352h176v206H392z" fill="#3f4f35" opacity="0.16"/>
+</svg>
