@@ -140,6 +140,68 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     };
 
+    /* Обычная отправка формы в скрытый iframe — на iOS/Android стабильнее, чем fetch(no-cors). */
+    var sendRsvpToTelegramViaIframe = function (endpoint, requestBody) {
+      return new Promise(function (resolve, reject) {
+        var iframeName = "tg_rsvp_" + String(Date.now());
+        var iframe = document.createElement("iframe");
+        iframe.name = iframeName;
+        iframe.setAttribute("title", "Отправка в Telegram");
+        iframe.style.cssText = "position:fixed;left:-9999px;top:0;width:1px;height:1px;border:0;opacity:0";
+        document.body.appendChild(iframe);
+
+        var hiddenForm = document.createElement("form");
+        hiddenForm.method = "POST";
+        hiddenForm.action = endpoint;
+        hiddenForm.target = iframeName;
+        hiddenForm.acceptCharset = "UTF-8";
+        hiddenForm.enctype = "application/x-www-form-urlencoded";
+        hiddenForm.style.cssText = "position:fixed;left:-9999px;top:0;opacity:0;pointer-events:none";
+
+        function addHidden(name, value) {
+          var input = document.createElement("input");
+          input.type = "hidden";
+          input.name = name;
+          input.value = value;
+          hiddenForm.appendChild(input);
+        }
+
+        addHidden("chat_id", String(requestBody.chat_id));
+        addHidden("text", requestBody.text);
+        if (requestBody.message_thread_id != null && !Number.isNaN(Number(requestBody.message_thread_id))) {
+          addHidden("message_thread_id", String(requestBody.message_thread_id));
+        }
+
+        document.body.appendChild(hiddenForm);
+
+        function cleanup() {
+          try {
+            if (hiddenForm.parentNode) {
+              hiddenForm.parentNode.removeChild(hiddenForm);
+            }
+          } catch (e1) {}
+          try {
+            if (iframe.parentNode) {
+              iframe.parentNode.removeChild(iframe);
+            }
+          } catch (e2) {}
+        }
+
+        try {
+          hiddenForm.submit();
+        } catch (submitErr) {
+          cleanup();
+          reject(submitErr);
+          return;
+        }
+
+        window.setTimeout(function () {
+          cleanup();
+          resolve({ ok: true });
+        }, 1600);
+      });
+    };
+
     var sendRsvpToTelegram = function (payload) {
       var endpoint = "https://api.telegram.org/bot" + telegramBotToken + "/sendMessage";
       var requestBody = {
@@ -154,9 +216,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }
 
-      /* Только form-urlencoded + no-cors: запрос с JSON с страницы (GitHub Pages и др.)
-         часто «зависает» на CORS/preflight и не доходит до catch. Так Telegram стабильно получает POST. */
-      return sendRsvpToTelegramFormUrlEncoded(endpoint, requestBody);
+      return sendRsvpToTelegramViaIframe(endpoint, requestBody).catch(function () {
+        return sendRsvpToTelegramFormUrlEncoded(endpoint, requestBody);
+      });
     };
 
     var validateForm = function () {
