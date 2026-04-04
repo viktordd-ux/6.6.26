@@ -154,36 +154,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }
 
-      return fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody),
-      })
-        .then(function (response) {
-          return response.json().then(function (data) {
-            if (!response.ok || !data.ok) {
-              throw new Error((data && data.description) || "Telegram API request failed");
-            }
-
-            return data;
-          });
-        })
-        .catch(function (err) {
-          var msg = err && err.message ? String(err.message) : "";
-          var isNetworkOrCors =
-            err.name === "TypeError" ||
-            msg.indexOf("Failed to fetch") !== -1 ||
-            msg.indexOf("NetworkError") !== -1 ||
-            msg.indexOf("Load failed") !== -1;
-
-          if (!isNetworkOrCors) {
-            return Promise.reject(err);
-          }
-
-          return sendRsvpToTelegramFormUrlEncoded(endpoint, requestBody);
-        });
+      /* Только form-urlencoded + no-cors: запрос с JSON с страницы (GitHub Pages и др.)
+         часто «зависает» на CORS/preflight и не доходит до catch. Так Telegram стабильно получает POST. */
+      return sendRsvpToTelegramFormUrlEncoded(endpoint, requestBody);
     };
 
     var validateForm = function () {
