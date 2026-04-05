@@ -32,6 +32,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var telegramBotToken = (form.dataset.telegramBotToken || "").trim();
     var telegramChatId = (form.dataset.telegramChatId || "").trim();
     var telegramThreadId = (form.dataset.telegramThreadId || "").trim();
+    var telegramProxyUrl = (form.dataset.telegramProxyUrl || "").trim();
 
     var getErrorNode = function (fieldName) {
       return form.querySelector('[data-error-for="' + fieldName + '"]');
@@ -134,6 +135,7 @@ document.addEventListener("DOMContentLoaded", function () {
       return fetch(endpoint, {
         method: "POST",
         mode: "no-cors",
+        keepalive: true,
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
@@ -237,8 +239,7 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     };
 
-    var sendRsvpToTelegram = function (payload) {
-      var endpoint = "https://api.telegram.org/bot" + telegramBotToken + "/sendMessage";
+    var buildTelegramRequestBody = function (payload) {
       var requestBody = {
         chat_id: telegramChatId,
         text: buildTelegramMessage(payload),
@@ -251,12 +252,53 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }
 
+      return requestBody;
+    };
+
+    /* Прокси (Cloudflare Worker и т.п.): нормальный CORS POST — на Android Chrome стабильнее, чем прямой вызов api.telegram.org. */
+    var sendRsvpToTelegramViaProxy = function (payload) {
+      var body = { text: buildTelegramMessage(payload) };
+      if (hasValue(telegramThreadId)) {
+        var tid = Number(telegramThreadId);
+        if (!Number.isNaN(tid)) {
+          body.message_thread_id = tid;
+        }
+      }
+
+      return fetch(telegramProxyUrl, {
+        method: "POST",
+        mode: "cors",
+        keepalive: true,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      }).then(function (response) {
+        return response.text().then(function (raw) {
+          var data;
+          try {
+            data = raw ? JSON.parse(raw) : {};
+          } catch (e) {
+            throw new Error("Ответ прокси не JSON");
+          }
+          if (!response.ok || !data.ok) {
+            var msg =
+              (data && (data.description || data.error)) || "Ошибка прокси (" + response.status + ")";
+            throw new Error(String(msg));
+          }
+          return data;
+        });
+      });
+    };
+
+    var sendRsvpToTelegramDirect = function (requestBody) {
+      var endpoint = "https://api.telegram.org/bot" + telegramBotToken + "/sendMessage";
       var isAndroid = /Android/i.test(navigator.userAgent || "");
 
       if (isAndroid) {
-        return sendRsvpToTelegramXHR(endpoint, requestBody)
+        return sendRsvpToTelegramFormUrlEncoded(endpoint, requestBody)
           .catch(function () {
-            return sendRsvpToTelegramFormUrlEncoded(endpoint, requestBody);
+            return sendRsvpToTelegramXHR(endpoint, requestBody);
           })
           .catch(function () {
             return sendRsvpToTelegramViaIframe(endpoint, requestBody);
@@ -270,6 +312,21 @@ document.addEventListener("DOMContentLoaded", function () {
         .catch(function () {
           return sendRsvpToTelegramXHR(endpoint, requestBody);
         });
+    };
+
+    var sendRsvpToTelegram = function (payload) {
+      var requestBody = buildTelegramRequestBody(payload);
+
+      if (hasValue(telegramProxyUrl)) {
+        return sendRsvpToTelegramViaProxy(payload).catch(function (err) {
+          if (hasValue(telegramBotToken) && hasValue(telegramChatId)) {
+            return sendRsvpToTelegramDirect(requestBody);
+          }
+          throw err;
+        });
+      }
+
+      return sendRsvpToTelegramDirect(requestBody);
     };
 
     var validateForm = function () {
@@ -365,7 +422,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         return;
       }
-      if (!hasValue(telegramBotToken) || !hasValue(telegramChatId)) {
+      var hasDirect =
+        hasValue(telegramBotToken) && hasValue(telegramChatId);
+      var hasProxy = hasValue(telegramProxyUrl);
+      if (!hasDirect && !hasProxy) {
         setStatusMessage("Форма временно недоступна: не настроена отправка в Telegram.", "error");
         return;
       }
