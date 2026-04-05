@@ -120,27 +120,62 @@ document.addEventListener("DOMContentLoaded", function () {
       ].join("\n");
     };
 
-    var sendRsvpToTelegramFormUrlEncoded = function (endpoint, requestBody) {
+    var getTelegramFormBodyString = function (requestBody) {
       var params = new URLSearchParams();
       params.append("chat_id", String(requestBody.chat_id));
       params.append("text", requestBody.text);
       if (requestBody.message_thread_id != null && !Number.isNaN(Number(requestBody.message_thread_id))) {
         params.append("message_thread_id", String(requestBody.message_thread_id));
       }
+      return params.toString();
+    };
 
+    var sendRsvpToTelegramFormUrlEncoded = function (endpoint, requestBody) {
       return fetch(endpoint, {
         method: "POST",
         mode: "no-cors",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
-        body: params.toString(),
+        body: getTelegramFormBodyString(requestBody),
       }).then(function () {
         return { ok: true };
       });
     };
 
-    /* Обычная отправка формы в скрытый iframe — на iOS/Android стабильнее, чем fetch(no-cors). */
+    /* Chrome на Android часто не отправляет POST в скрытый iframe на другой домен — XHR обычно проходит. */
+    var sendRsvpToTelegramXHR = function (endpoint, requestBody) {
+      var body = getTelegramFormBodyString(requestBody);
+      return new Promise(function (resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        xhr.timeout = 20000;
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState !== 4) {
+            return;
+          }
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve({ ok: true });
+            return;
+          }
+          if (xhr.status === 0) {
+            resolve({ ok: true });
+            return;
+          }
+          reject(new Error("Telegram HTTP " + xhr.status));
+        };
+        xhr.onerror = function () {
+          reject(new Error("XHR network"));
+        };
+        xhr.ontimeout = function () {
+          reject(new Error("XHR timeout"));
+        };
+        xhr.open("POST", endpoint);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        xhr.send(body);
+      });
+    };
+
+    /* Обычная отправка формы в скрытый iframe — на iPhone Safari обычно стабильно. */
     var sendRsvpToTelegramViaIframe = function (endpoint, requestBody) {
       return new Promise(function (resolve, reject) {
         var iframeName = "tg_rsvp_" + String(Date.now());
@@ -216,9 +251,25 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }
 
-      return sendRsvpToTelegramViaIframe(endpoint, requestBody).catch(function () {
-        return sendRsvpToTelegramFormUrlEncoded(endpoint, requestBody);
-      });
+      var isAndroid = /Android/i.test(navigator.userAgent || "");
+
+      if (isAndroid) {
+        return sendRsvpToTelegramXHR(endpoint, requestBody)
+          .catch(function () {
+            return sendRsvpToTelegramFormUrlEncoded(endpoint, requestBody);
+          })
+          .catch(function () {
+            return sendRsvpToTelegramViaIframe(endpoint, requestBody);
+          });
+      }
+
+      return sendRsvpToTelegramViaIframe(endpoint, requestBody)
+        .catch(function () {
+          return sendRsvpToTelegramFormUrlEncoded(endpoint, requestBody);
+        })
+        .catch(function () {
+          return sendRsvpToTelegramXHR(endpoint, requestBody);
+        });
     };
 
     var validateForm = function () {
